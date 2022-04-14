@@ -26,14 +26,10 @@ def fq_dict_from_sample(wildcards):
 ##################################################################
 
 # to run snakemake without explicitly requesting any output files on the command line, we must request output files in the first rule. Therefore we include this otherwise useless rule here  
-if config["merge_as_sequencing_replicates"] or config["merge_as_biological_replicates"]:
-    rule all:
-        input:
-            expand("results/cooler/{sample}."+str(config["cooler_bin_size"])+".cool",sample=config["merged_sample_name"])
-else:
-    rule all:
-        input:
-            expand("results/cooler/{sample}."+str(config["cooler_bin_size"])+".cool",sample=samples_table.index)
+rule all:
+    input:
+        expand("results/mapped/{sample}.bam",sample=samples_table.index)
+
 
 #################################################################
 ##                    Align reads to genome                    ##
@@ -45,9 +41,9 @@ rule bwa_mem2_mem:
         # Index can be a list of (all) files created by bwa, or one of them
         idx=config["bwa_genome"]
     output:
-        "mapped/{sample}.bam",
+        "results/mapped/{sample}.bam",
     log:
-        "logs/bwa_mem2/{sample}.log",
+        "results/logs/bwa_mem2/{sample}.log",
     params:
         extra=r"-R '@RG\tID:{sample}\tSM:{sample}'",
         sort="samtools",  # Can be 'none', 'samtools' or 'picard'.

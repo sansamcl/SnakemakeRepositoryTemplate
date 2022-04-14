@@ -17,9 +17,9 @@ samples_table = pd.read_csv(config["samples_table"]).set_index("sample", drop=Fa
 # fastq filename input function definition set to Python dictionary
 def fq_dict_from_sample(wildcards):
   return {
-    #[samples_table.loc[wildcards.sample, "fastq1"],samples_table.loc[wildcards.sample, "fastq2"]]
-    "fq1": samples_table.loc[wildcards.sample, "fastq1"],
-    "fq2": samples_table.loc[wildcards.sample, "fastq2"]
+    reads=[samples_table.loc[wildcards.sample, "fastq1"],samples_table.loc[wildcards.sample, "fastq2"]]
+    #"fq1": samples_table.loc[wildcards.sample, "fastq1"],
+    #"fq2": samples_table.loc[wildcards.sample, "fastq2"]
   }
 
 ##################################################################
@@ -38,8 +38,8 @@ rule all:
 
 rule bwa_mem2_mem:
     input:
-        #reads=unpack(fq_dict_from_sample),
-        expand(reads=[samples_table.loc["{sample}",'fastq1'],samples_table.loc["{sample}",'fastq2']],sample=samples_table.index),
+        reads=unpack(fq_dict_from_sample),
+        #expand(reads=[samples_table.loc["{sample}",'fastq1'],samples_table.loc["{sample}",'fastq2']],sample=samples_table.index),
         # Index can be a list of (all) files created by bwa, or one of them
         idx=config["bwa_genome"]
     output:

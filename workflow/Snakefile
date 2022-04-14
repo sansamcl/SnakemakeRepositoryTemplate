@@ -17,7 +17,7 @@ samples_table = pd.read_csv(config["samples_table"]).set_index("sample", drop=Fa
 # fastq filename input function definition set to Python dictionary
 def fq_dict_from_sample(wildcards):
   return {
-    reads=[samples_table.loc[wildcards.sample, "fastq1"],samples_table.loc[wildcards.sample, "fastq2"]]
+    reads = [ samples_table.loc[wildcards.sample, "fastq1"], samples_table.loc[wildcards.sample, "fastq2"] ]
     #"fq1": samples_table.loc[wildcards.sample, "fastq1"],
     #"fq2": samples_table.loc[wildcards.sample, "fastq2"]
   }

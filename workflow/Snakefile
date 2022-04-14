@@ -17,7 +17,7 @@ samples_table = pd.read_csv(config["samples_table"]).set_index("sample", drop=Fa
 # fastq filename input function definition set to Python dictionary
 def fq_dict_from_sample(wildcards):
   return {
-    "reads": [ samples_table.loc[wildcards.sample, "fastq1"], samples_table.loc[wildcards.sample, "fastq2"] ]
+    "sample": [ samples_table.loc[wildcards.sample, "fastq1"], samples_table.loc[wildcards.sample, "fastq2"] ]
     #"fq1": samples_table.loc[wildcards.sample, "fastq1"],
     #"fq2": samples_table.loc[wildcards.sample, "fastq2"]
   }
@@ -32,13 +32,42 @@ rule all:
         expand("results/mapped/{sample}.bam",sample=samples_table.index)
 
 
+##################################################################
+##                          Trim reads                          ##
+##################################################################
+
+rule fastp_pe:
+    input:
+        unpack(fq_dict_from_sample)
+    output:
+        trimmed=["results/trimmed/pe/{sample}.1.fastq", "results/trimmed/pe/{sample}.2.fastq"],
+        # Unpaired reads separately
+        unpaired1="results/trimmed/pe/{sample}.u1.fastq",
+        unpaired2="results/trimmed/pe/{sample}.u2.fastq",
+        # or in a single file
+#        unpaired="trimmed/pe/{sample}.singletons.fastq",
+        merged="results/trimmed/pe/{sample}.merged.fastq",
+        failed="results/trimmed/pe/{sample}.failed.fastq",
+        html="results/report/pe/{sample}.html",
+        json="results/report/pe/{sample}.json"
+    log:
+        "results/logs/fastp/pe/{sample}.log"
+    envmodules:
+         "fastp/0.23.2",
+    params:
+        #adapters="--adapter_sequence ACGGCTAGCTA --adapter_sequence_r2 AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC",
+        extra="--merge"
+    threads: 2
+    wrapper:
+        "v1.3.2/bio/fastp"
+
 #################################################################
 ##                    Align reads to genome                    ##
 #################################################################
 
 rule bwa_mem:
     input:
-        unpack(fq_dict_from_sample),
+        reads=["results/trimmed/pe/{sample}.1.fastq", "results/trimmed/pe/{sample}.2.fastq"],
         #expand(reads=[samples_table.loc["{sample}",'fastq1'],samples_table.loc["{sample}",'fastq2']],sample=samples_table.index),
         # Index can be a list of (all) files created by bwa, or one of them
         idx=config["bwa_genome"]

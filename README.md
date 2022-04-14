@@ -1,3 +1,51 @@
+# SnakemakeRepositoryTemplate
+
+### 1.  Load slurm and miniconda
+Note. The commands to do this will be different on your machine. These commands are specific to an HPC using slurm with these modules installed.
+
+```bash
+ml slurm
+ml miniconda
+```
+#### 3A.  FIRST TIME ONLY:  Setup conda environment with snakemake
+```bash
+# -f is the location of the environment .yml file. 
+## The relative path assumes that you are in the root directory of this repository.
+# -p is the path where you want to install this environment
+conda env create -f workflow/envs/SnakemakeEnv.yml -p /s/sansam-lab/SnakemakeEnv 
+```
+
+#### 3B.  Activate conda environment with snakemake
+```bash
+conda activate /s/sansam-lab/SnakemakeEnv
+```
+
+
+```bash
+git clone https://github.com/sansamcl/SnakemakeRepositoryTemplate.git
+```
+
+```bash
+sbatch --constraint=westmere \
+--wrap="\
+snakemake \
+-R \
+-j 999 \
+--use-conda \
+--conda-prefix ../condEnvs/ \
+#--conda-frontend conda \
+--latency-wait 100 \
+--cluster-config config/cluster_config.yml \
+--cluster '\
+sbatch \
+-A {cluster.account} \
+-p {cluster.partition} \
+--cpus-per-task {cluster.cpus-per-task}  \
+--mem {cluster.mem} \
+--output {cluster.output}'"
+```
+
+
 # HiC-SnakeMake
 <img src="https://github.com/SansamLab/HiC-SnakeMake/blob/main/HiCSnakemake2.png?raw=true" alt="" width="300"/>
 

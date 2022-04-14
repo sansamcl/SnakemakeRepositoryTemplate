@@ -1,0 +1,29 @@
+# path to samples table
+samples_table: "config/testSamples.csv"
+# location of bwa indexed genome for the alignment
+bwa_genome: "/Volumes/hts_core/Shared/zebrafish/danRer11/noAlts/danRer11_noAlts.fa"
+# number of threads to use for bwa-mem alignment
+bwa_threads: 12
+# location of chromosome sizes file (see example in resources folder)
+chrom_sizes: "resources/chromosomeSizes/danRer11.chrom.sizes.modified"
+# number of processors to use when sorting the pairs file
+pairtools_sort_nproc:  8
+# gigabytes of memory (##G) to use when sorting the pairs file
+pairtools_memory:  "96G"
+# path and name of juicer style restriction enzyme file
+juicer_RE_file: "resources/juicer_RE_files/zrgz11_HindIII.txt"
+# bin size for .cool file
+cooler_bin_size: 10000
+# number of cores to use when generating the .cool file
+cooler_n_cores: 12
+# maximum number of splits of chromosome when generating the .cool file
+cooler_max_split: 8
+# choose (True or Fase) whether to merge all as sequencing replicates
+merge_as_sequencing_replicates: False
+# choose (True or False) whether to merge all as biological replicates
+merge_as_biological_replicates: True
+# merged sample name ("Your_Sample_Name"). All merged files will have this in their name.
+merged_sample_name: "SRR12008033_4"
+# memory and number of processors for pairtools merge
+pairtools_merge_memory: "64G"
+pairtools_merge_nproc: 8

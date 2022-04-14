@@ -1,0 +1,311 @@
+configfile: "config/config.yml"
+
+##################################################################
+##                    Define input functions                    ##
+##################################################################
+
+# this was created after reading 
+#  https://eriqande.github.io/eca-bioinf-handbook/managing-workflows-with-snakemake.html
+#  https://www.biostars.org/p/335903/
+
+# this imports the pandas package functionality in an object named pd
+import pandas as pd
+
+# this reads the CSV file and sets an index using the values in the "sample" column.
+samples_table = pd.read_csv(config["samples_table"]).set_index("sample", drop=False)
+
+# fastq filename input function definition set to Python dictionary
+def fq_dict_from_sample(wildcards):
+  return {
+    "fq1": samples_table.loc[wildcards.sample, "fastq1"],
+    "fq2": samples_table.loc[wildcards.sample, "fastq2"]
+  }
+
+##################################################################
+##                           rules                              ##
+##################################################################
+
+# to run snakemake without explicitly requesting any output files on the command line, we must request output files in the first rule. Therefore we include this otherwise useless rule here  
+if config["merge_as_sequencing_replicates"] or config["merge_as_biological_replicates"]:
+    rule all:
+        input:
+            expand("results/cooler/{sample}."+str(config["cooler_bin_size"])+".cool",sample=config["merged_sample_name"])
+else:
+    rule all:
+        input:
+            expand("results/cooler/{sample}."+str(config["cooler_bin_size"])+".cool",sample=samples_table.index)
+
+#################################################################
+##                    Align reads to genome                    ##
+#################################################################
+        
+rule run_bwa_mem:
+    input:
+        unpack(fq_dict_from_sample)
+    params:
+        bwaIndex=config["bwa_genome"],
+        bwaThreads=config["bwa_threads"]
+    output:
+        bam="results/aligned/{sample}.bam"
+    envmodules:
+        "bwa/0.7.15",
+        "samtools/1.14"
+    conda:
+        "envs/HiCSnakemake.yml"
+    log: "results/logs/snakelogs/run_bwa_mem.{sample}.log"
+    shell:
+        """
+        bwa mem -t {params.bwaThreads} -SP5M {params.bwaIndex} {input.fq1} {input.fq2} | samtools view -Shb - > {output.bam}  
+        """
+
+#################################################################
+##               Parse aligned reads into .pairs               ##
+#################################################################
+
+rule make_pairs_with_pairtools_parse:
+# the following was copied from https://github.com/4dn-dcic/docker-4dn-hic/blob/master/scripts/run-pairsam-parse-sort.sh
+# Classify Hi-C molecules as unmapped/single-sided/multimapped/chimeric/etc
+    # and output one line per read, containing the following, separated by \\v:
+    #  * triu-flipped pairs
+    #  * read id
+    #  * type of a Hi-C molecule
+    #  * corresponding sam entries
+    input:
+        bam="results/aligned/{sample}.bam"
+    params:
+        nproc=config["pairtools_sort_nproc"],
+        memory=config["pairtools_memory"],
+        chrom_sizes=config["chrom_sizes"]
+    output:
+        pairs="results/pairs/{sample}_pairs.gz"
+    envmodules:
+        "pairtools/0.3.0"
+    conda:
+        "envs/HiCSnakemake.yml"
+    log: "results/logs/snakelogs/make_pairs_with_pairtools_parse.{sample}.log"
+    shell:
+        """
+        pairtools parse -c {params.chrom_sizes} --drop-sam --add-columns mapq --output {output.pairs} {input.bam}
+        """
+
+##################################################################
+##             Sort and merge sequencing replicates             ##
+##################################################################
+
+if config["merge_as_sequencing_replicates"]:
+    rule sort_pairs_with_pairtools_sort:
+        input:
+            pairs="results/pairs/{sample}_pairs.gz"
+        params:
+            nproc=config["pairtools_sort_nproc"],
+            memory=config["pairtools_memory"],
+            tempdir="results/{sample}_temp/",
+            chrom_sizes=config["chrom_sizes"]
+        output:
+            sorted_pairs="results/temp_sorted_pairs/{sample}_sorted.pairs.gz" 
+        envmodules:
+            "pairtools/0.3.0"
+        conda:
+            "envs/HiCSnakemake.yml"
+        log: "results/logs/snakelogs/sort_pairs_with_pairtools_sort.{sample}.log"
+        shell:
+            """
+            [ -d {params.tempdir} ] || mkdir {params.tempdir}
+            pairtools sort --nproc {params.nproc} --memory {params.memory} --tmpdir {params.tempdir} --output {output.sorted_pairs} {input.pairs}
+            rm -rf {params.tempdir}
+            """
+    rule merge_sequencing_replicates:
+        input:
+            sorted_pairs=expand("results/temp_sorted_pairs/{sample}_sorted.pairs.gz",sample=samples_table.index)
+        output:
+            merged=expand("results/sorted_pairs/{sample}_sorted.pairs.gz",sample=config["merged_sample_name"])
+        envmodules:
+            "pairtools/0.3.0"
+        conda:
+            "envs/HiCSnakemake.yml"
+        params:
+            sorted_pairs_list=' '.join(expand("results/temp_sorted_pairs/{sample}_sorted.pairs.gz",sample=samples_table.index)),
+            filename=config["merged_sample_name"]
+        log: expand("results/logs/snakelogs/merge_sequencing_replicates.{sample}.log",sample=config["merged_sample_name"])
+        shell:
+            """
+            pairtools merge --output results/sorted_pairs/{params.filename}_sorted.pairs.gz {params.sorted_pairs_list}
+            rm -rf results/temp_sorted_pairs/
+            """
+
+##################################################################
+##          Sort without merging sequencing replicates          ##
+##################################################################
+
+else:
+    rule sort_pairs_with_pairtools_sort:
+        input:
+            pairs="results/pairs/{sample}_pairs.gz"
+        params:
+            nproc=config["pairtools_sort_nproc"],
+            memory=config["pairtools_memory"],
+            tempdir="results/{sample}_temp/",
+            chrom_sizes=config["chrom_sizes"]
+        output:
+            sorted_pairs="results/sorted_pairs/{sample}_sorted.pairs.gz"
+        envmodules:
+            "pairtools/0.3.0"
+        conda:
+            "envs/HiCSnakemake.yml"
+        log: "results/logs/snakelogs/sort_pairs_with_pairtools_sort.{sample}.log"
+        shell:
+            """
+            [ -d {params.tempdir} ] || mkdir {params.tempdir}
+            pairtools sort --nproc {params.nproc} --memory {params.memory} --tmpdir {params.tempdir} --output {output.sorted_pairs} {input.pairs}
+            rm -rf {params.tempdir}
+            """
+
+#################################################################
+##                      Remove duplicates                      ##
+#################################################################
+
+rule mark_duplicates_with_pairtools_dedup:
+    input:
+        sorted_pairs="results/sorted_pairs/{sample}_sorted.pairs.gz"
+    output:
+        marked_pairs="results/marked_pairs/{sample}.marked.pairs.gz"
+    log: "results/logs/snakelogs/mark_duplicates_with_pairtools_dedup.{sample}.log"
+    envmodules:
+        "pairtools/0.3.0",
+        "pairix/0.3.7"
+    conda:
+        "envs/HiCSnakemake.yml"
+    shell:
+        """
+        pairtools dedup --mark-dups --output-dups - --output-unmapped - --output {output.marked_pairs} {input.sorted_pairs}
+        pairix {output.marked_pairs}
+        """
+
+rule filter_pairs:
+    input:
+        marked_pairs="results/marked_pairs/{sample}.marked.pairs.gz"
+    output:
+        dedup_pairs="results/filtered_pairs/{sample}.dedup.pairs.gz",
+        unmapped="results/filtered_pairs/{sample}.unmapped.pairs.gz"
+    params:
+        temp_file="results/marked_pairs/{sample}_temp.gz",
+        chrom_sizes=config["chrom_sizes"]
+    log: "results/logs/snakelogs/filter_pairs.{sample}.log"
+    envmodules:
+        "pairtools/0.3.0",
+        "pairix/0.3.7"
+    conda:
+        "envs/HiCSnakemake.yml"
+    shell:
+        """
+        # Select UU, UR, RU reads
+        pairtools select '(pair_type == "UU") or (pair_type == "UR") or (pair_type == "RU")' --output-rest {output.unmapped} --output {params.temp_file} {input.marked_pairs}
+        # Select reads overlapping chromosomes in chromosome sizes file
+        pairtools select 'True' --chrom-subset {params.chrom_sizes} -o {output.dedup_pairs} {params.temp_file}
+        pairix {output.dedup_pairs}
+
+        # remove temp file
+        rm {params.temp_file}
+        """
+
+########################################################################
+##  Generate fragment map from pairs and merge biological replicates  ##
+########################################################################
+
+if config["merge_as_biological_replicates"]:
+    rule add_frag2Pairs:
+        input:
+            dedup_pairs="results/filtered_pairs/{sample}.dedup.pairs.gz"
+        output:
+            frag2_pairs="results/temp_frag2_pairs/{sample}.frag2pairs.pairs.gz"
+        params:
+            restriction_file=config["juicer_RE_file"],
+            frag2_pairs_basename="results/temp_frag2_pairs/{sample}.frag2pairs.pairs"
+        log: "results/logs/snakelogs/add_frag2Pairs.{sample}.log"
+        envmodules:
+            "python/3.7.0",
+            "pairtools/0.3.0",
+            "pairix/0.3.7"
+        conda:
+            "envs/HiCSnakemake.yml"
+        shell:
+            """
+            gunzip -ck {input.dedup_pairs} | workflow/scripts/fragment_4dnpairs.pl -a - {params.frag2_pairs_basename} {params.restriction_file}
+            bgzip -f {params.frag2_pairs_basename}
+            pairix -f {output.frag2_pairs}
+            """
+    rule merge_biological_replicates:
+        input:
+            frag2_pairs=expand("results/temp_frag2_pairs/{sample}.frag2pairs.pairs.gz",sample=samples_table.index)
+        output:
+            merged=expand("results/frag2_pairs/{sample}.frag2pairs.pairs.gz",sample=config["merged_sample_name"])
+        params:
+            frag2_pairs_list=' '.join(expand("results/temp_frag2_pairs/{sample}.frag2pairs.pairs.gz",sample=samples_table.index)),
+            filename=config["merged_sample_name"]
+        log: expand("results/logs/snakelogs/merge_biological_replicates.{sample}.log",sample=config["merged_sample_name"])
+        envmodules:
+            "pairtools/0.3.0",
+            "pairix/0.3.7"
+        shell:
+            """
+            pairtools merge --output results/frag2_pairs/{params.filename}.frag2pairs.pairs.gz {params.frag2_pairs_list}
+            pairix -f {output.merged}
+            rm -rf results/temp_frag2_pairs/
+            """
+
+##############################################################################
+##  Generate fragment map from pairs without merging biological replicates  ##
+##############################################################################
+
+else:
+    rule add_frag2Pairs:
+        input:
+            dedup_pairs="results/filtered_pairs/{sample}.dedup.pairs.gz"
+        output:
+            frag2_pairs="results/frag2_pairs/{sample}.frag2pairs.pairs.gz"
+        params:
+            restriction_file=config["juicer_RE_file"],
+            frag2_pairs_basename="results/frag2_pairs/{sample}.frag2pairs.pairs"
+        log: "results/logs/snakelogs/add_frag2Pairs.{sample}.log"
+        envmodules:
+            "pairtools/0.3.0",
+            "pairix/0.3.7"
+        conda:
+            "envs/HiCSnakemake.yml"
+        shell:
+            """
+            gunzip -ck {input.dedup_pairs} | workflow/scripts/fragment_4dnpairs.pl -a - {params.frag2_pairs_basename} {params.restriction_file}
+            bgzip -f {params.frag2_pairs_basename}
+            pairix -f {output.frag2_pairs}
+            """
+
+#################################################################
+##                 Generate .mcool Hi-C matrix                 ##
+#################################################################
+
+rule run_cooler:
+    input:
+        frag2_pairs="results/frag2_pairs/{sample}.frag2pairs.pairs.gz"
+    output:
+        cooler="results/cooler/{sample}."+str(config["cooler_bin_size"])+".cool"
+    params:
+        chrom_sizes=config["chrom_sizes"],
+        cooler_bin_size=config["cooler_bin_size"],
+        cooler_n_cores=config["cooler_n_cores"],
+        cooler_max_split=config["cooler_max_split"],
+        cooler_tempchrsize="./{sample}_tempchrsize"
+    log: "results/logs/snakelogs/run_cooler.{sample}.log"
+    envmodules:
+            "cooler/0.8.11",
+            "pairix/0.3.7"
+    conda:
+        "envs/HiCSnakemake.yml"
+    shell:
+        """
+        # use for all chromosomes and contigs
+        cp {params.chrom_sizes} {params.cooler_tempchrsize}
+            
+        # the cload command requires the chrom size file to exist besides the chrom size bin file.
+        cooler cload pairix -p {params.cooler_n_cores} -s {params.cooler_max_split} {params.cooler_tempchrsize}:{params.cooler_bin_size} {input.frag2_pairs} {output.cooler}
+        """
+

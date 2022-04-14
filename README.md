@@ -1,3 +1,40 @@
+# SnakemakeRepositoryTemplate
+
+### 1.  Load slurm and miniconda
+Note. The commands to do this will be different on your machine. These commands are specific to an HPC using slurm with these modules installed.
+
+```bash
+ml slurm
+ml miniconda
+```
+
+
+
+```bash
+git clone https://github.com/SansamLab/Process_HiC_SnakeMake.git
+```
+
+```bash
+sbatch --constraint=westmere \
+--wrap="\
+snakemake \
+-R \
+-j 999 \
+--use-conda \
+--conda-prefix ../condEnvs/ \
+#--conda-frontend conda \
+--latency-wait 100 \
+--cluster-config config/cluster_config.yml \
+--cluster '\
+sbatch \
+-A {cluster.account} \
+-p {cluster.partition} \
+--cpus-per-task {cluster.cpus-per-task}  \
+--mem {cluster.mem} \
+--output {cluster.output}'"
+```
+
+
 # HiC-SnakeMake
 <img src="https://github.com/SansamLab/HiC-SnakeMake/blob/main/HiCSnakemake2.png?raw=true" alt="" width="300"/>
 

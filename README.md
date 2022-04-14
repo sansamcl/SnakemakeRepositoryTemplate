@@ -11,7 +11,7 @@ ml miniconda
 
 
 ```bash
-git clone https://github.com/SansamLab/Process_HiC_SnakeMake.git
+git clone https://github.com/sansamcl/SnakemakeRepositoryTemplate.git
 ```
 
 ```bash

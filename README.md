@@ -25,6 +25,20 @@ conda activate /s/sansam-lab/SnakemakeEnv
 git clone https://github.com/sansamcl/SnakemakeRepositoryTemplate.git
 ```
 
+#### 7A. Use conda environments
+If conda is to be used for rule-specific environments, you may find it useful to create the environments first. Running 'snakemake' with the '--conda-create-envs-only' option will create the environments without running the pipeline. The '--conda-prefix' option is used to set a directory in which the ‘conda’ and ‘conda-archive’ directories are created. This directory may be changed to a stable or shared location.
+```bash
+sbatch --mem 32G \
+--wrap="\
+snakemake \
+--cores all \
+--use-conda \
+--conda-prefix ../condEnvs/ \
+--conda-create-envs-only \
+--conda-frontend conda"
+```
+
+Once the environments are setup, you may execute pipeline with conda environments using the following command:
 ```bash
 sbatch --constraint=westmere \
 --wrap="\
@@ -33,7 +47,29 @@ snakemake \
 -j 999 \
 --use-conda \
 --conda-prefix ../condEnvs/ \
-#--conda-frontend conda \
+--conda-frontend conda \
+--latency-wait 100 \
+--cluster-config config/cluster_config.yml \
+--cluster '\
+sbatch \
+-A {cluster.account} \
+-p {cluster.partition} \
+--cpus-per-task {cluster.cpus-per-task}  \
+--mem {cluster.mem} \
+--output {cluster.output}'"
+```
+
+#### 7B. Use environment modules.
+Rather than using conda environments, you may prefer to use modules installed on your computing cluster. These modules are defined for each rule in 'workflow/Snakefile'. This must be customized for your environment, and you must modify the Snakefile yourself.
+
+To execute the pipeline with environment modules, enter the following:
+```bash
+sbatch --constraint=westmere \
+--wrap="\
+snakemake \
+-R \
+-j 999 \
+--use-envmodules \
 --latency-wait 100 \
 --cluster-config config/cluster_config.yml \
 --cluster '\

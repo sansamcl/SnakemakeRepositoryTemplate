@@ -38,7 +38,7 @@ rule all:
 
 rule bwa_mem2_mem:
     input:
-        reads=unpack(fq_dict_from_sample),
+        unpack(fq_dict_from_sample),
         #expand(reads=[samples_table.loc["{sample}",'fastq1'],samples_table.loc["{sample}",'fastq2']],sample=samples_table.index),
         # Index can be a list of (all) files created by bwa, or one of them
         idx=config["bwa_genome"]

@@ -1,7 +1,7 @@
 # path to samples table
 samples_table: "config/testSamples.csv"
 # location of bwa indexed genome for the alignment
-bwa_genome: "/Volumes/hts_core/Shared/zebrafish/danRer11/noAlts/danRer11_noAlts.fa"
+bwa_genome: "/Volumes/hts_core/Shared/zebrafish/danRer11/noAlts/danRer11_noAlts.fa.amb"
 # number of threads to use for bwa-mem alignment
 bwa_threads: 12
 # location of chromosome sizes file (see example in resources folder)

@@ -115,6 +115,7 @@ rule samtools_index:
 rule calculate_rfd:
     input:
         "results/mapped/{sample}.bam",
+        "results/mapped/{sample}.bam.bai",
     output:
         "results/bedgraphs/{sample}_rfd.bedgraph",
         "results/bedgraphs/{sample}_w.bedgraph",

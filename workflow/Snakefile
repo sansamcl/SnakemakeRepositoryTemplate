@@ -29,7 +29,7 @@ def fq_dict_from_sample(wildcards):
 # to run snakemake without explicitly requesting any output files on the command line, we must request output files in the first rule. Therefore we include this otherwise useless rule here  
 rule all:
     input:
-        expand("results/mapped/{sample}.bam.bai",sample=samples_table.index)
+        expand("results/bedgraphs/{sample}_rfd.bedgraph",sample=samples_table.index)
 
 
 ##################################################################

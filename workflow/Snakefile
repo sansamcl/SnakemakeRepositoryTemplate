@@ -123,7 +123,7 @@ rule calculate_rfd:
         "R/4.1.2-mkl",
         "bioconductor/3.14"
     script:
-        "workflow/scripts/calculate_RFD.R"
+        "scripts/calculate_RFD.R"
 
 
 # rule run_bwa_mem:

@@ -6,6 +6,8 @@ bwa_genome: "/Volumes/hts_core/Shared/zebrafish/danRer11/noAlts/danRer11_noAlts.
 bwa_threads: 12
 # location of chromosome sizes file (see example in resources folder)
 chrom_sizes: "resources/chromosomeSizes/danRer11.chrom.sizes.modified"
+# .bed file with regions for calculating the rfd
+rfd_Windows: "resources/bedFiles/Hg38FifteenKbWindwos.bed"
 # number of processors to use when sorting the pairs file
 pairtools_sort_nproc:  8
 # gigabytes of memory (##G) to use when sorting the pairs file

@@ -108,6 +108,24 @@ rule samtools_index:
         "v1.3.2/bio/samtools/index"
 
 
+#################################################################
+##         Calculate Replication Fork Directionality           ##
+#################################################################
+
+rule calculate_rfd:
+    input:
+        "results/mapped/{sample}.bam",
+    output:
+        "results/bedgraphs/{sample}_rfd.bedgraph",
+        "results/bedgraphs/{sample}_w.bedgraph",
+        "results/bedgraphs/{sample}_c.bedgraph"
+    envmodules:
+        "R/4.1.2-mkl",
+        "bioconductor/3.14"
+    script:
+        "workflow/scripts/calculate_RFD.R"
+
+
 # rule run_bwa_mem:
 #     input:
 #         unpack(fq_dict_from_sample)

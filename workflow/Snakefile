@@ -107,24 +107,53 @@ rule samtools_index:
     wrapper:
         "v1.3.2/bio/samtools/index"
 
-
 #################################################################
-##         Calculate Replication Fork Directionality           ##
+##                    Split Bam Into Strands                   ##
 #################################################################
 
-rule calculate_rfd:
+rule Get_Watson_Reads:
     input:
         "results/mapped/{sample}.bam",
-        "results/mapped/{sample}.bam.bai",
     output:
-        "results/bedgraphs/{sample}_rfd.bedgraph",
-        "results/bedgraphs/{sample}_w.bedgraph",
-        "results/bedgraphs/{sample}_c.bedgraph"
-    envmodules:
-        "R/4.1.2-mkl",
-        "bioconductor/3.14"
-    script:
-        "scripts/calculate_RFD.R"
+        "results/mapped/{sample}_w.bam",
+    params:
+        additional_params = "-mapQuality \">=30\" -isDuplicate \"false\" -isPrimaryAlignment \"true\" -alignmentFlag \"147\" -alignmentFlag \"99\""
+    log:
+        "logs/bamtools/filtered/{sample}.log"
+    wrapper:
+        "v1.3.2/bio/bamtools/filter"
+
+
+rule Get_Crick_Reads:
+    input:
+        "results/mapped/{sample}.bam",
+    output:
+        "results/mapped/{sample}_c.bam",
+    params:
+        additional_params = "-mapQuality \">=30\" -isDuplicate \"false\" -isPrimaryAlignment \"true\" -alignmentFlag \"163\" -alignmentFlag \"83\""
+    log:
+        "logs/bamtools/filtered/{sample}.log"
+    wrapper:
+        "v1.3.2/bio/bamtools/filter"
+
+
+# #################################################################
+# ##         Calculate Replication Fork Directionality           ##
+# #################################################################
+
+# rule calculate_rfd:
+#     input:
+#         "results/mapped/{sample}.bam",
+#         "results/mapped/{sample}.bam.bai",
+#     output:
+#         "results/bedgraphs/{sample}_rfd.bedgraph",
+#         "results/bedgraphs/{sample}_w.bedgraph",
+#         "results/bedgraphs/{sample}_c.bedgraph"
+#     envmodules:
+#         "R/4.1.2-mkl",
+#         "bioconductor/3.14"
+#     script:
+#         "scripts/calculate_RFD.R"
 
 
 # rule run_bwa_mem:

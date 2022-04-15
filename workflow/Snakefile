@@ -29,7 +29,9 @@ def fq_dict_from_sample(wildcards):
 # to run snakemake without explicitly requesting any output files on the command line, we must request output files in the first rule. Therefore we include this otherwise useless rule here  
 rule all:
     input:
-        expand("results/bedgraphs/{sample}_rfd.bedgraph",sample=samples_table.index)
+        expand("results/bedgraphs/{sample}_rfd.bedgraph",sample=samples_table.index),
+        expand("results/mapped/{sample}_c.bam",sample=samples_table.index),
+        expand("results/mapped/{sample}_w.bam",sample=samples_table.index),
 
 
 ##################################################################
@@ -120,6 +122,8 @@ rule Get_Watson_Reads:
         additional_params = "-mapQuality \">=30\" -isDuplicate \"false\" -isPrimaryAlignment \"true\" -alignmentFlag \"147\" -alignmentFlag \"99\""
     log:
         "logs/bamtools/filtered/{sample}.log"
+    envmodules:
+         "bamtools/2.5.1",
     wrapper:
         "v1.3.2/bio/bamtools/filter"
 
@@ -133,6 +137,8 @@ rule Get_Crick_Reads:
         additional_params = "-mapQuality \">=30\" -isDuplicate \"false\" -isPrimaryAlignment \"true\" -alignmentFlag \"163\" -alignmentFlag \"83\""
     log:
         "logs/bamtools/filtered/{sample}.log"
+    envmodules:
+         "bamtools/2.5.1",
     wrapper:
         "v1.3.2/bio/bamtools/filter"
 

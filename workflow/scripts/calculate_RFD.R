@@ -5,7 +5,7 @@
 # April 14, 2022
 
 bedFile <- snakemake@config[["rfd_Windows"]]
-negativeGrepTerms <- "chrX|alt|chrY|random"
+negativeGrepTerms <- "chrX|alt|chrY|random|chrM"
 bamFile <- snakemake@input[[1]]
 rfdBedgraph <- snakemake@output[[1]]
 posBedgraph <- snakemake@output[[2]]

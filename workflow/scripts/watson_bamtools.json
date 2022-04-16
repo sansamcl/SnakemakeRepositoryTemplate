@@ -1,0 +1,17 @@
+{
+	"filters" :
+		[
+			{
+				"mapQuality" : ">=30",
+				"isDuplicate" : "false",
+				"isPrimaryAlignment" : "true",
+				"alignmentFlag" : 99
+			},
+			{
+				"mapQuality" : ">=30",
+				"isDuplicate" : "false",
+				"isPrimaryAlignment" : "true",
+				"alignmentFlag" : 147
+			}
+		]
+}

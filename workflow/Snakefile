@@ -102,7 +102,7 @@ rule samtools_index:
     log:
         "results/logs/samtools_index/{sample}.log",
     envmodules:
-         "samtools/1.14",
+        "samtools/1.14",
     params:
         extra="",  # optional params string
     threads: 4  # This value - 1 will be sent to -@
@@ -119,11 +119,11 @@ rule Get_Watson_Reads:
     output:
         "results/mapped/{sample}_w.bam",
     params:
-        additional_params = "-mapQuality \">=30\" -isDuplicate \"false\" -isPrimaryAlignment \"true\" -alignmentFlag \"147\" -alignmentFlag \"99\""
+        additional_params = "-script \"watson_bamtools.json\""
     log:
-        "logs/bamtools/filtered/{sample}.log"
+        "logs/bamtools/filtered/{sample}_Get_Watson_Reads.log"
     envmodules:
-         "bamtools/2.5.1",
+        "bamtools/2.5.1",
     wrapper:
         "v1.3.2/bio/bamtools/filter"
 
@@ -134,9 +134,9 @@ rule Get_Crick_Reads:
     output:
         "results/mapped/{sample}_c.bam",
     params:
-        additional_params = "-mapQuality \">=30\" -isDuplicate \"false\" -isPrimaryAlignment \"true\" -alignmentFlag \"163\" -alignmentFlag \"83\""
+        additional_params = "-script \"crick_bamtools.json\""
     log:
-        "logs/bamtools/filtered/{sample}.log"
+        "logs/bamtools/filtered/{sample}_Get_Crick_Reads.log"
     envmodules:
          "bamtools/2.5.1",
     wrapper:

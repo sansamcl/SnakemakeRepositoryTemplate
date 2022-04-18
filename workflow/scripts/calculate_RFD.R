@@ -1,31 +1,55 @@
 #!/usr/bin/env Rscript
 
 # Chris Sansam
-# version 01
-# April 14, 2022
+# version 02
+# April 16, 2022
 
+# load libraries
+library(bamsignals)
+library(GenomicRanges)
+library(Rsamtools)
+
+# set variables passed through snakemake 'input', 'output', and 'configs' lists
 bedFile <- snakemake@config[["rfd_Windows"]]
-negativeGrepTerms <- "chrX|alt|chrY|random|chrM"
-bamFile <- snakemake@input[[1]]
+posBamFile <- snakemake@input[[1]]
+negBamFile <- snakemake@input[[3]]
 rfdBedgraph <- snakemake@output[[1]]
 posBedgraph <- snakemake@output[[2]]
 negBedgraph <- snakemake@output[[3]]
-library(bamsignals)
-library(GenomicRanges)
+
+# set terms for removing chromosomes absent from bam
+#negativeGrepTerms <- "chrX|alt|chrY|random|chrM"
+
+# read analysis windows into dataframe and convert to genomic ranges
+## this could be done in one step with rtracklayer, but we've had trouble with this package on conda
 df <- read.table(bedFile)
-df2 <- df[-grep(negativeGrepTerms,df$V1),]
-gr <- makeGRangesFromDataFrame(df2,
+gr <- makeGRangesFromDataFrame(df,
                          ignore.strand=T,
                          seqnames.field="V1",
                          start.field="V2",
                          end.field="V3")
-test <- bamCount(bamFile,
+
+# rfd cannot be calculated for chromosomes without reads, 
+# so the windows in the df with seqnames not present in both .bam file are removed
+sqnames <- unique(c(idxstatsBam(posBamFile)$seqnames,
+  idxstatsBam(negBamFile)$seqnames))
+gr <- gr[which(as.vector(seqnames(gr) %in% sqnames)]
+
+
+# count reads on watson strand
+watson <- bamCount(negBamFile,
                    gr,
-                   mapqual=30,
-                   ss=TRUE,
-                   paired.end="midpoint",
-                   tlenFilter=c(10,1000))
-rfd <- (test[1,]-test[2,])/(test[1,]-test[2,])
+                   ss=FALSE,
+                   paired.end="midpoint")
+
+# count reads on crick strand
+crick <- bamCount(posBamFile,
+                   gr,
+                   ss=FALSE,
+                   paired.end="midpoint")
+
+
+rfd <- (crick-watson)/(crick+watson)
 
 writeBedgraph <- function(vctr,filename=rfdBedgraph){
   score(gr) <- vctr
@@ -38,5 +62,5 @@ writeBedgraph <- function(vctr,filename=rfdBedgraph){
 }
 
 writeBedgraph(rfd,rfdBedgraph)
-writeBedgraph(test[1,],posBedgraph)
-writeBedgraph(test[2,],negBedgraph)
+writeBedgraph(crick,posBedgraph)
+writeBedgraph(watson,negBedgraph)

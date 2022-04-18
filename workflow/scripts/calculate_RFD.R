@@ -35,7 +35,6 @@ sqnames <- unique(c(idxstatsBam(posBamFile)$seqnames,
   idxstatsBam(negBamFile)$seqnames))
 gr <- gr[which(as.vector(seqnames(gr) %in% sqnames))]
 
-
 # count reads on watson strand
 watson <- bamCount(negBamFile,
                    gr,
@@ -51,9 +50,11 @@ crick <- bamCount(posBamFile,
 
 rfd <- (crick-watson)/(crick+watson)
 
+
 writeBedgraph <- function(vctr,filename=rfdBedgraph){
   score(gr) <- vctr
-  write.table(data.frame(as.data.frame(gr)[,c(1:3)],score(gr)),
+  gr2 <- gr[which(is.numeric(vctr))]
+  write.table(data.frame(as.data.frame(gr2)[,c(1:3)],score(gr2)),
               file=filename,
               quote= F,
               row.names = F,

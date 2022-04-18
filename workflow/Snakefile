@@ -32,6 +32,7 @@ rule all:
         expand("results/bedgraphs/{sample}_rfd.bedgraph",sample=samples_table.index),
         expand("results/split/{sample}_c.bam",sample=samples_table.index),
         expand("results/split/{sample}_w.bam",sample=samples_table.index),
+        expand("results/bedgraphs/{sample}_rfd.bedgraph",sample=samples_table.index),
 
 
 ##################################################################

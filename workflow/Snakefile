@@ -119,7 +119,7 @@ rule Get_Watson_Reads:
     output:
         "results/split/{sample}_w.bam",
     params:
-        additional_params = "-script \"scripts/watson_bamtools.json\""
+        additional_params = "-script 'workflow/scripts/watson_bamtools.json'"
     log:
         "logs/bamtools/filtered/{sample}_Get_Watson_Reads.log"
     envmodules:
@@ -148,7 +148,7 @@ rule Get_Crick_Reads:
     output:
         "results/split/{sample}_c.bam",
     params:
-        additional_params = "-script \"scripts/crick_bamtools.json\""
+        additional_params = "-script 'workflow/scripts/crick_bamtools.json'"
     log:
         "logs/bamtools/filtered/{sample}_Get_Crick_Reads.log"
     envmodules:

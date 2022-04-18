@@ -53,7 +53,7 @@ rfd <- (crick-watson)/(crick+watson)
 
 writeBedgraph <- function(vctr,filename=rfdBedgraph){
   score(gr) <- vctr
-  gr2 <- gr[which(sapply(vctr,is.numeric))]
+  gr2 <- gr[which(!is.na(vctr))]
   write.table(data.frame(as.data.frame(gr2)[,c(1:3)],score(gr2)),
               file=filename,
               quote= F,

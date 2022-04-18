@@ -33,7 +33,7 @@ gr <- makeGRangesFromDataFrame(df,
 # so the windows in the df with seqnames not present in both .bam file are removed
 sqnames <- unique(c(idxstatsBam(posBamFile)$seqnames,
   idxstatsBam(negBamFile)$seqnames))
-gr <- gr[which(as.vector(seqnames(gr) %in% sqnames)]
+gr <- gr[which(as.vector(seqnames(gr) %in% sqnames))]
 
 
 # count reads on watson strand

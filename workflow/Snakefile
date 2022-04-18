@@ -54,6 +54,7 @@ rule fastp_pe:
         "results/logs/fastp/pe/{sample}.log"
     envmodules:
          "fastp/0.23.2",
+         "miniconda/4.11.0"
     params:
         #adapters="--adapter_sequence ACGGCTAGCTA --adapter_sequence_r2 AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC",
         extra="--merge"
@@ -79,6 +80,7 @@ rule bwa_mem:
          "bwa/0.7.15",
          "samtools/1.14",
          "picard/2.21.2",
+         "miniconda/4.11.0"
     params:
         extra=r"-R '@RG\tID:{sample}\tSM:{sample}'",
         sorting="samtools",  # Can be 'none', 'samtools' or 'picard'.
@@ -101,6 +103,7 @@ rule samtools_index:
         "results/logs/samtools_index/{sample}.log",
     envmodules:
         "samtools/1.14",
+        "miniconda/4.11.0"
     params:
         extra="",  # optional params string
     threads: 4  # This value - 1 will be sent to -@
@@ -134,6 +137,7 @@ rule samtools_index_Watson_Reads:
         "results/logs/samtools_index/{sample}_samtools_index_Watson_Reads.log",
     envmodules:
         "samtools/1.14",
+        "miniconda/4.11.0"
     params:
         extra="",  # optional params string
     threads: 4  # This value - 1 will be sent to -@
@@ -163,6 +167,7 @@ rule samtools_index_Crick_Reads:
         "results/logs/samtools_index/{sample}_samtools_index_Crick_Reads.log",
     envmodules:
         "samtools/1.14",
+        "miniconda/4.11.0"
     params:
         extra="",  # optional params string
     threads: 4  # This value - 1 will be sent to -@
@@ -186,7 +191,8 @@ rule calculate_rfd:
         "results/bedgraphs/{sample}_c.bedgraph"
     envmodules:
         "R/4.1.2-mkl",
-        "bioconductor/3.14"
+        "bioconductor/3.14",
+        "miniconda/4.11.0"
     script:
         "scripts/calculate_RFD.R"
 

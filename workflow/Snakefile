@@ -176,10 +176,10 @@ rule samtools_index_Crick_Reads:
 
 rule calculate_rfd:
     input:
-        "results/mapped/{sample}_c.bam",
-        "results/mapped/{sample}_c.bam.bai",
-        "results/mapped/{sample}_w.bam",
-        "results/mapped/{sample}_w.bam.bai",
+        "results/split/{sample}_c.bam",
+        "results/split/{sample}_c.bam.bai",
+        "results/split/{sample}_w.bam",
+        "results/split/{sample}_w.bam.bai",
     output:
         "results/bedgraphs/{sample}_rfd.bedgraph",
         "results/bedgraphs/{sample}_w.bedgraph",

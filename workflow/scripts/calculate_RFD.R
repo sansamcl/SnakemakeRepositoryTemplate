@@ -23,7 +23,7 @@ negBedgraph <- snakemake@output[[3]]
 
 # read analysis windows into dataframe and convert to genomic ranges
 ## this could be done in one step with rtracklayer, but we've had trouble with this package on conda
-df <- read.table(bedFile)
+df <- read.table(bedFile, sep="\t")
 gr <- makeGRangesFromDataFrame(df,
                          ignore.strand=T,
                          seqnames.field="V1",
@@ -51,7 +51,7 @@ crick <- bamCount(posBamFile,
 
 # read blacklist windows into dataframe and convert to genomic ranges
 ## this could be done in one step with rtracklayer, but we've had trouble with this package on conda
-bl_df <- read.table(blacklistBedFile)
+bl_df <- read.table(blacklistBedFile,sep="\t")
 bl_gr <- makeGRangesFromDataFrame(bl_df,
                          ignore.strand=T,
                          seqnames.field="V1",

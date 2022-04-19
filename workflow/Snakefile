@@ -18,8 +18,6 @@ samples_table = pd.read_csv(config["samples_table"]).set_index("sample", drop=Fa
 def fq_dict_from_sample(wildcards):
   return {
     "sample": [ samples_table.loc[wildcards.sample, "fastq1"], samples_table.loc[wildcards.sample, "fastq2"] ]
-    #"fq1": samples_table.loc[wildcards.sample, "fastq1"],
-    #"fq2": samples_table.loc[wildcards.sample, "fastq2"]
   }
 
 ##################################################################

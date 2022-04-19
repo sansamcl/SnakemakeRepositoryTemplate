@@ -114,13 +114,13 @@ rule remove_duplicates:
         bam="results/mapped/{sample}.bam",
     params:
         memory=config["picard_memory"],
-        tempDir={sample}_tmp/
+        tempDir="{sample}_tmp/"
     output:
         marked_bam="results/dedup/{sample}.bam",
         #marked_metrics="results/logs/picard_metrics/{sample}.marked.duplicates_metrics.txt"
     envmodules:
-        #"picard/2.21.2",
         "sambamba/0.4.7"
+        #"picard/2.21.2",
     conda:
         #"envs/RTEnv.yml"
     log: "results/logs/snakelogs/mark_duplicates_with_picard.{sample}.log"

@@ -28,9 +28,52 @@ samtools_index:
     output: results/logs/{rule}.{wildcards.sample}.log
     error: results/logs/{rule}.{wildcards.sample}.err
 
+remove_duplicates:
+    cpus-per-task: 3
+    mem:  24G
+    name: "{rule}.{wildcards.sample}"
+    output: results/logs/{rule}.{wildcards.sample}.log
+    error: results/logs/{rule}.{wildcards.sample}.err
+
+samtools_dedup_index:
+    cpus-per-task: 4
+    mem:  32G
+    name: "{rule}.{wildcards.sample}"
+    output: results/logs/{rule}.{wildcards.sample}.log
+    error: results/logs/{rule}.{wildcards.sample}.err
+
+Get_Watson_Reads:
+    cpus-per-task: 2
+    mem:  16G
+    name: "{rule}.{wildcards.sample}"
+    output: results/logs/{rule}.{wildcards.sample}.log
+    error: results/logs/{rule}.{wildcards.sample}.err
+
+samtools_index_Watson_Reads:
+    cpus-per-task: 4
+    mem:  32G
+    name: "{rule}.{wildcards.sample}"
+    output: results/logs/{rule}.{wildcards.sample}.log
+    error: results/logs/{rule}.{wildcards.sample}.err
+
+Get_Crick_Reads:
+    cpus-per-task: 2
+    mem:  16G
+    name: "{rule}.{wildcards.sample}"
+    output: results/logs/{rule}.{wildcards.sample}.log
+    error: results/logs/{rule}.{wildcards.sample}.err
+
+samtools_index_Crick_Reads:
+    cpus-per-task: 4
+    mem:  32G
+    name: "{rule}.{wildcards.sample}"
+    output: results/logs/{rule}.{wildcards.sample}.log
+    error: results/logs/{rule}.{wildcards.sample}.err
+
 calculate_rfd:
     cpus-per-task: 2
     mem:  24G
     name: "{rule}.{wildcards.sample}"
     output: results/logs/{rule}.{wildcards.sample}.log
     error: results/logs/{rule}.{wildcards.sample}.err
+

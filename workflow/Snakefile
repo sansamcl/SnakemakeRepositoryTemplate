@@ -111,26 +111,18 @@ rule samtools_index:
 
 rule remove_duplicates:
     input:
-        bam="results/mapped/{sample}.bam",
-    params:
-        memory=config["picard_memory"],
-        tempDir="{sample}_tmp/"
+        "results/mapped/{sample}.bam"
     output:
-        marked_bam="results/dedup/{sample}.bam",
-        #marked_metrics="results/logs/picard_metrics/{sample}.marked.duplicates_metrics.txt"
+        "results/dedup/{sample}.bam"
+    params:
+        extra="-r"  # optional parameters
+    log:
+        "logs/sambamba-markdup/{sample}.log"
     envmodules:
         "sambamba/0.4.7"
-        #"picard/2.21.2",
-    conda:
-        "envs/RTEnv.yml"
-    log: "results/logs/snakelogs/mark_duplicates_with_picard.{sample}.log"
-    shell:
-        """
-        sambamba markdup --tmpdir={params.tempDir} -t 12 -p {input.bam} {output.marked_bam}
-        #JAVA_MEM_OPTS={params.memory}
-        #RAM=$(echo $JAVA_MEM_OPTS | rev | cut -c2- | rev)
-        #picard MarkDuplicates COMPRESSION_LEVEL=9 VALIDATION_STRINGENCY=LENIENT MAX_RECORDS_IN_RAM=$((200000*RAM)) CREATE_INDEX=false I={input.bam} O={output.marked_bam} M={output.marked_metrics}
-        """
+    threads: 12
+    wrapper:
+        "v1.3.2/bio/sambamba/markdup"
 
 rule samtools_dedup_index:
     input:

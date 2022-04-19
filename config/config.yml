@@ -1,5 +1,5 @@
 # picard memory
-picard_memory:  "8G"
+picard_memory:  "96G"
 # path to samples table
 samples_table: "config/samples.csv"
 # location of bwa indexed genome for the alignment

@@ -29,7 +29,7 @@ samtools_index:
     error: results/logs/{rule}.{wildcards.sample}.err
 
 remove_duplicates:
-    cpus-per-task: 3
+    cpus-per-task: 12
     mem:  24G
     name: "{rule}.{wildcards.sample}"
     output: results/logs/{rule}.{wildcards.sample}.log

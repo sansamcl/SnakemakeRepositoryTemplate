@@ -113,20 +113,23 @@ rule remove_duplicates:
     input:
         bam="results/mapped/{sample}.bam",
     params:
-        memory=config["picard_memory"]
+        memory=config["picard_memory"],
+        tempDir={sample}_tmp/
     output:
         marked_bam="results/dedup/{sample}.bam",
-        marked_metrics="results/logs/picard_metrics/{sample}.marked.duplicates_metrics.txt"
+        #marked_metrics="results/logs/picard_metrics/{sample}.marked.duplicates_metrics.txt"
     envmodules:
-        "picard/2.21.2"
+        #"picard/2.21.2",
+        "sambamba/0.4.7"
     conda:
-        "envs/RTEnv.yml"
+        #"envs/RTEnv.yml"
     log: "results/logs/snakelogs/mark_duplicates_with_picard.{sample}.log"
     shell:
         """
-        JAVA_MEM_OPTS={params.memory}
-        RAM=$(echo $JAVA_MEM_OPTS | rev | cut -c2- | rev)
-        picard MarkDuplicates COMPRESSION_LEVEL=9 VALIDATION_STRINGENCY=LENIENT MAX_RECORDS_IN_RAM=$((200000*RAM)) CREATE_INDEX=false I={input.bam} O={output.marked_bam} M={output.marked_metrics}
+        sambamba markdup --tmpdir={params.tempDir} -t 12 -p {input.bam} {output.marked_bam}
+        #JAVA_MEM_OPTS={params.memory}
+        #RAM=$(echo $JAVA_MEM_OPTS | rev | cut -c2- | rev)
+        #picard MarkDuplicates COMPRESSION_LEVEL=9 VALIDATION_STRINGENCY=LENIENT MAX_RECORDS_IN_RAM=$((200000*RAM)) CREATE_INDEX=false I={input.bam} O={output.marked_bam} M={output.marked_metrics}
         """
 
 rule samtools_dedup_index:

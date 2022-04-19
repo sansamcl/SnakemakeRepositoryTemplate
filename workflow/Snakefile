@@ -121,6 +121,9 @@ rule remove_duplicates:
         extra="--REMOVE_DUPLICATES true --MAX_RECORDS_IN_RAM 200000",
     resources:
         mem_mb=16384,
+    envmodules:
+         "picard/2.21.2",
+         "miniconda/4.11.0"
     wrapper:
         "v1.3.2/bio/picard/markduplicateswithmatecigar"
 

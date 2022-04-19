@@ -126,7 +126,7 @@ rule remove_duplicates:
         """
         JAVA_MEM_OPTS={params.memory}
         RAM=$(echo $JAVA_MEM_OPTS | rev | cut -c2- | rev)
-        picard MarkDuplicates COMPRESSION_LEVEL=9 VALIDATION_STRINGENCY=LENIENT MAX_RECORDS_IN_RAM=$((200000*RAM)) CREATE_INDEX=true I={input.bam} O={output.marked_bam} M={output.marked_metrics}
+        picard MarkDuplicates COMPRESSION_LEVEL=9 VALIDATION_STRINGENCY=LENIENT MAX_RECORDS_IN_RAM=$((200000*RAM)) CREATE_INDEX=false I={input.bam} O={output.marked_bam} M={output.marked_metrics}
         """
 
 rule samtools_dedup_index:

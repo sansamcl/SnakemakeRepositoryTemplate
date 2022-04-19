@@ -122,7 +122,7 @@ rule remove_duplicates:
         "sambamba/0.4.7"
         #"picard/2.21.2",
     conda:
-        #"envs/RTEnv.yml"
+        "envs/RTEnv.yml"
     log: "results/logs/snakelogs/mark_duplicates_with_picard.{sample}.log"
     shell:
         """

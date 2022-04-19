@@ -78,7 +78,7 @@ overlaps_df$bl_watson <- bl_watson[overlaps_df$queryHits]
 overlaps_df$bl_crick <- bl_crick[overlaps_df$queryHits]
 
 # sum blacklisted reads in each window
-lst <- split(overlaps_df,f=df$subjectHits)
+lst <- split(overlaps_df,f=overlaps_df$subjectHits)
 lst2 <- lapply(lst,function(df){data.frame(
   "subjectHits" = df$subjectHits[1],
   "bl_watson" = sum(df$bl_watson),

@@ -111,22 +111,23 @@ rule samtools_index:
 
 rule remove_duplicates:
     input:
-        "results/mapped/{sample}.bam",
-    output:
-        bam="results/dedup/{sample}.bam",
-        metrics="results/dedup/{sample}.metrics.txt",
-    log:
-        "results/logs/picard/dedup/{sample}.log",
+        bam="results/mapped/{sample}.bam",
     params:
-        extra="--REMOVE_DUPLICATES true --MAX_RECORDS_IN_RAM 200000",
-    resources:
-        mem_mb=16384,
+        memory=config["picard_memory"]
+    output:
+        marked_bam="results/dedup/{sample}.bam",
+        marked_metrics="results/logs/picard_metrics/{sample}.marked.duplicates_metrics.txt"
     envmodules:
-         "picard/2.21.2",
-         "python"
-         ##"miniconda/4.11.0"
-    wrapper:
-        "v1.3.2/bio/picard/markduplicateswithmatecigar"
+        "picard/2.21.2"
+    conda:
+        "envs/RTEnv.yml"
+    log: "results/logs/snakelogs/mark_duplicates_with_picard.{sample}.log"
+    shell:
+        """
+        JAVA_MEM_OPTS={params.memory}
+        RAM=$(echo $JAVA_MEM_OPTS | rev | cut -c2- | rev)
+        picard MarkDuplicates COMPRESSION_LEVEL=9 VALIDATION_STRINGENCY=LENIENT MAX_RECORDS_IN_RAM=$((200000*RAM)) CREATE_INDEX=true I={input.bam} O={output.marked_bam} M={output.marked_metrics}
+        """
 
 rule samtools_dedup_index:
     input:

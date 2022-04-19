@@ -8,6 +8,8 @@ bwa_threads: 12
 chrom_sizes: "resources/chromosomeSizes/danRer11.chrom.sizes.modified"
 # .bed file with regions for calculating the rfd
 rfd_Windows: "resources/bedFiles/Hg38FifteenKbWindwos.bed"
+# .bed file with blacklisted regions
+blacklistBedFile:  "resources/bedFiles/hg38-blacklist.v2.bed"
 # number of processors to use when sorting the pairs file
 pairtools_sort_nproc:  8
 # gigabytes of memory (##G) to use when sorting the pairs file

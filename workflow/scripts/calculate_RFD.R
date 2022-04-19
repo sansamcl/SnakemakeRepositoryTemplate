@@ -11,6 +11,7 @@ library(Rsamtools)
 
 # set variables passed through snakemake 'input', 'output', and 'configs' lists
 bedFile <- snakemake@config[["rfd_Windows"]]
+blacklistBedFile <- snakemake@config[["blacklistBedFile"]]
 posBamFile <- snakemake@input[[1]]
 negBamFile <- snakemake@input[[3]]
 rfdBedgraph <- snakemake@output[[1]]

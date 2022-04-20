@@ -1,0 +1,11 @@
+{
+	"filters" :
+		[
+			{
+				"mapQuality" : ">=30",
+				"isDuplicate" : "false",
+				"isPrimaryAlignment" : "true",
+				"isReverseStrand" : "false"
+			}
+		]
+}

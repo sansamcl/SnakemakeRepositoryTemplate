@@ -17,7 +17,8 @@ samples_table = pd.read_csv(config["samples_table"]).set_index("sample", drop=Fa
 # fastq filename input function definition set to Python dictionary
 def fq_dict_from_sample(wildcards):
   return {
-    "sample": [ samples_table.loc[wildcards.sample, "fastq1"] ]
+    "fq1": samples_table.loc[wildcards.sample, "fastq1"],
+    "fq2": samples_table.loc[wildcards.sample, "fastq2"]
   }
 
 ##################################################################
@@ -34,22 +35,22 @@ rule all:
 ##                          Trim reads                          ##
 ##################################################################
 
-
 rule fastp_se:
     input:
-        unpack(fq_dict_from_sample)
+        unpack(fq_dict_from_sample)   # <--- we need to wrap our input function inside a special Snakemake function called unpack() which turns the dict into a collection of named inputs
+    params:
+        threads=config["fastp_cpus"]
     output:
         trimmed="results/trimmed/se/{sample}.1.fastq",
-        failed="results/trimmed/se/{sample}.failed.fastq",
-        html="results/report/se/{sample}.html",
-        json="results/report/se/{sample}.json"
-    log:
-        "logs/fastp/se/{sample}.log"
-    params:
-        extra=""
-    threads: 2
-    wrapper:
-        "v1.3.2/bio/fastp"
+        fastp_report="results/qc/fastp_reports/{sample}.html",
+        fastp_json="results/qc/fastp_reports/{sample}.json"
+    envmodules:
+        "fastp/0.23.2"
+    log: "results/logs/snakelogs/trim_reads_with_fastp.{sample}.log"
+    shell:
+        """
+        fastp -i {input.fq1} -o {output.trimmed} -h {output.fastp_report} --json {output.fastp_json} -R "{wildcards.sample}" -w {params.threads}
+        """
 
 #################################################################
 ##                    Align reads to genome                    ##

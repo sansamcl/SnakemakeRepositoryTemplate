@@ -1,5 +1,5 @@
 # picard memory
-picard_memory:  "96G"
+picard_memory:  "8G"
 # path to samples table
 samples_table: "config/samples.csv"
 # location of bwa indexed genome for the alignment
@@ -12,24 +12,4 @@ chrom_sizes: "resources/chromosomeSizes/danRer11.chrom.sizes.modified"
 rfd_Windows: "resources/bedFiles/Hg38FifteenKbWindwos.bed"
 # .bed file with blacklisted regions
 blacklistBedFile:  "resources/bedFiles/hg38-blacklist.v2.bed"
-# number of processors to use when sorting the pairs file
-pairtools_sort_nproc:  8
-# gigabytes of memory (##G) to use when sorting the pairs file
-pairtools_memory:  "96G"
-# path and name of juicer style restriction enzyme file
-juicer_RE_file: "resources/juicer_RE_files/zrgz11_HindIII.txt"
-# bin size for .cool file
-cooler_bin_size: 10000
-# number of cores to use when generating the .cool file
-cooler_n_cores: 12
-# maximum number of splits of chromosome when generating the .cool file
-cooler_max_split: 8
-# choose (True or Fase) whether to merge all as sequencing replicates
-merge_as_sequencing_replicates: False
-# choose (True or False) whether to merge all as biological replicates
-merge_as_biological_replicates: True
-# merged sample name ("Your_Sample_Name"). All merged files will have this in their name.
-merged_sample_name: "SRR12008033_4"
-# memory and number of processors for pairtools merge
-pairtools_merge_memory: "64G"
-pairtools_merge_nproc: 8
+fastp_cpus: 6

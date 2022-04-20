@@ -52,11 +52,16 @@ crick <- bamCount(posBamFile,
 # read blacklist windows into dataframe and convert to genomic ranges
 ## this could be done in one step with rtracklayer, but we've had trouble with this package on conda
 bl_df <- read.table(blacklistBedFile,sep="\t")
-bl_gr <- makeGRangesFromDataFrame(bl_df,
+bl_gr_temp <- makeGRangesFromDataFrame(bl_df,
                          ignore.strand=T,
                          seqnames.field="V1",
                          start.field="V2",
                          end.field="V3")
+
+# segment the blacklisted genomic ranges such that no blacklisted range overlaps multiple rfd windows
+disjoined_gr <- disjoin(c(bl_gr_temp,gr),ignore.strand=TRUE)
+bl_gr <- subsetByOverlaps(disjoined_gr,bl_gr_temp,maxgap = -1)
+
 
 # count reads on watson strand in blacklisted windows
 bl_watson <- bamCount(negBamFile,

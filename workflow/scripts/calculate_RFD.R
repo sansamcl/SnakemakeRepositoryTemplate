@@ -101,10 +101,14 @@ watson2 <- watson - bl_watson2
 # calculate rfd
 rfd <- (crick2-watson2)/(crick2+watson2)
 
+gr1 <- gr
+start(gr1) <- round(rowMeans(cbind(start(gr),end(gr))),0)
+end(gr1) <- start(gr1)+1
+
 # write bedgraphs
 writeBedgraph <- function(vctr,filename=rfdBedgraph){
-  score(gr) <- vctr
-  gr2 <- gr[which(!is.na(vctr))]
+  score(gr1) <- vctr
+  gr2 <- gr1[which(!is.na(vctr))]
   write.table(data.frame(as.data.frame(gr2)[,c(1:3)],score(gr2)),
               file=filename,
               quote= F,

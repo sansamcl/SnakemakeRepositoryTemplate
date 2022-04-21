@@ -216,5 +216,5 @@ rule calculate_rfd:
         "R/4.1.2-mkl",
         "bioconductor/3.14",
     script:
-        "scripts/calculate_RFD.R"
+        "scripts/calculate_RFD_se.R"
 
